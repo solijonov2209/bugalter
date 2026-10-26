@@ -1,0 +1,15 @@
+# Render.com Blueprint: Dashboard → New → Blueprint → shu repo
+services:
+  - type: web
+    name: bugalter
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    # Bepul tarifda disk saqlanmaydi: har qayta ishga tushganda demo ma'lumotlar qaytadan yaratiladi
+    startCommand: npm run seed && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_VERSION
+        value: "22"

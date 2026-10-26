@@ -58,6 +58,16 @@ JWT_SECRET=uzun-maxfiy-kalit PORT=4000 npm start
 
 Server `client/dist` ni o'zi beradi. Ma'lumotlar bazasi fayli: `server/data/bugalter.db` (`DB_FILE` bilan o'zgartiriladi).
 
+### Bepul serverga joylash (Render.com)
+
+1. [render.com](https://render.com) da GitHub orqali ro'yxatdan o'ting.
+2. **New → Blueprint** ni bosing va shu repozitoriyani tanlang. `render.yaml` hamma sozlamani o'zi o'qiydi.
+3. **Apply** ni bosing. 3–5 daqiqadan keyin `https://bugalter-xxxx.onrender.com` manzili ochiladi.
+
+Bepul tarif cheklovlari:
+- 15 daqiqa ishlatilmasa server uxlaydi, birinchi ochilishi ~1 daqiqa kutadi.
+- Disk saqlanmaydi: server qayta ishga tushganda kiritilgan ma'lumotlar o'chadi va demo ma'lumotlar qaytadan yaratiladi. Haqiqiy ishlatish uchun PostgreSQL (masalan Neon yoki Render Postgres) ga o'tish kerak.
+
 ### Testlar
 
 ```bash
