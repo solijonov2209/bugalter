@@ -10,6 +10,7 @@ import { initRealtime } from './realtime.js';
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use('/api', api);
 
 // Production: tayyor frontendni shu serverning o'zi beradi
