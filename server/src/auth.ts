@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import type { NextFunction, Request, Response } from 'express';
+import { get } from './db.js';
 
 const SECRET = process.env.JWT_SECRET ?? 'dev-secret-ozgartiring';
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
@@ -31,12 +32,17 @@ export const verifyToken = (token: string) => {
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = req.headers.authorization?.replace(/^Bearer /, '');
   if (!token) return res.status(401).json({ error: 'Avtorizatsiya talab qilinadi' });
+  let claims: AuthUser;
   try {
-    req.user = verifyToken(token);
-    next();
+    claims = verifyToken(token);
   } catch {
-    res.status(401).json({ error: 'Token yaroqsiz yoki muddati o\'tgan' });
+    return res.status(401).json({ error: 'Token yaroqsiz yoki muddati o\'tgan' });
   }
+  // Baza qayta yaratilgan bo'lsa (masalan, bepul serverda qayta ishga tushganda) token egasi yo'q bo'lishi mumkin
+  const u = get('SELECT id, org_id, role, employee_id FROM users WHERE id = ?', claims.id);
+  if (!u || u.org_id !== claims.orgId) return res.status(401).json({ error: 'Foydalanuvchi topilmadi, qayta kiring' });
+  req.user = { id: u.id, orgId: u.org_id, role: u.role, employeeId: u.employee_id };
+  next();
 }
 
 export const requireRole =
