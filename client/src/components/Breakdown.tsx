@@ -24,7 +24,7 @@ export interface Calc {
 }
 
 /** Oylik qanday hisoblanganini qatorma-qator ko'rsatadi */
-export default function Breakdown({ c, taxRate }: { c: Calc; taxRate?: number }) {
+export default function Breakdown({ c, taxRate, handed = 0 }: { c: Calc; taxRate?: number; handed?: number }) {
   const d = c.details;
   const variableLabel =
     d.payType === 'hourly'
@@ -87,6 +87,18 @@ export default function Breakdown({ c, taxRate }: { c: Calc; taxRate?: number })
             <td className="py-2">Qo'lga beriladi</td>
             <td className="whitespace-nowrap py-2 text-right tabular-nums">{money(c.net)}</td>
           </tr>
+          {handed > 0 && (
+            <>
+              <tr className="text-rose-700">
+                <td className="py-1">Qo'lga berilgan</td>
+                <td className="whitespace-nowrap py-1 text-right tabular-nums">−{money(handed)}</td>
+              </tr>
+              <tr className="border-t border-slate-200 font-semibold">
+                <td className="py-2">Qoldiq (berilishi kerak)</td>
+                <td className="whitespace-nowrap py-2 text-right tabular-nums">{money(c.net - handed)}</td>
+              </tr>
+            </>
+          )}
         </tbody>
       </table>
     </div>

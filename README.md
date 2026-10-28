@@ -12,6 +12,7 @@ Korxona va o'quv markazlari uchun oylik maoshni hisoblash va boshqarish web ilov
   - Tushumdan foiz: o'qituvchi guruhlaridan tushgan pulning N%
   - Har biriga qat'iy qism (oklad) qo'shish mumkin
 - Bonus, avans, ushlanmalar; daromad solig'i (standart 12%, sozlanadi)
+- **Qo'lga berilgan pullar:** o'qituvchi/xodimga oy davomida naqd berilgan summalar (sana, izoh bilan) alohida yoziladi va oylikning qoldig'idan ayiriladi; kabinetda ham ko'rinadi
 - Oylik vedomosti: jonli hisob → qoralama → tasdiqlangan → to'langan (qulflanadi)
 - **Xodim kabineti:** xodim faqat o'z oyligini ko'radi, buxgalter biror narsani o'zgartirsa sahifa Socket.io orqali darhol yangilanadi
 - O'quv markazi: guruhlar, o'quvchilar, oylik to'lovlar, qarzdorlar filtri

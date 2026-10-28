@@ -6,7 +6,7 @@ import { ErrorText, PageHeader, PeriodPicker, Stat } from '../components/ui';
 
 interface Dash {
   employees: number;
-  totals: { gross: number; tax: number; net: number; paid: number };
+  totals: { gross: number; tax: number; net: number; paid: number; handed: number };
   center: { students: number; groups: number; revenue: number };
   trend: { period: string; gross: number; net: number }[];
 }
@@ -33,7 +33,11 @@ export default function Dashboard() {
           label="To'langan"
           value={money(data.totals.paid)}
           accent="text-emerald-700"
-          hint={`Qoldiq: ${money(data.totals.net - data.totals.paid)}`}
+          hint={
+            data.totals.handed
+              ? `Qo'lga berilgan: ${money(data.totals.handed)} · Qoldiq: ${money(data.totals.net - data.totals.paid - data.totals.handed)}`
+              : `Qoldiq: ${money(data.totals.net - data.totals.paid)}`
+          }
         />
       </div>
 

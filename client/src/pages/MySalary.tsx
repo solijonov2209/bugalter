@@ -9,6 +9,8 @@ interface Salary {
   live: Calc;
   saved: (Calc & { status: string; paid_at: string | null }) | null;
   adjustments: { id: number; kind: string; amount: number; note: string; created_at: string }[];
+  handed: number;
+  payouts: { id: number; amount: number; given_on: string; note: string }[];
   history: { period: string; gross: number; tax: number; net: number; status: string; paid_at: string | null }[];
 }
 
@@ -38,7 +40,7 @@ export default function MySalary() {
         <PeriodPicker value={period} onChange={setPeriod} />
       </PageHeader>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+      <div className={`mb-6 grid gap-4 ${data.handed ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'}`}>
         <div className={`transition ${flash ? 'ring-4 ring-emerald-200 rounded-xl' : ''}`}>
           <Stat
             label={locked ? "Qo'lga beriladi" : "Hozircha qo'lga"}
@@ -54,12 +56,20 @@ export default function MySalary() {
         </div>
         <Stat label="Hisoblangan" value={money(calc.gross)} />
         <Stat label="Soliq va ushlanmalar" value={money(calc.tax + calc.deductions + calc.advance)} accent="text-rose-700" />
+        {data.handed > 0 && (
+          <Stat
+            label="Qo'lga berilgan"
+            value={money(data.handed)}
+            accent="text-rose-700"
+            hint={`Qoldiq: ${money(calc.net - data.handed)}`}
+          />
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="card">
           <h2 className="mb-3 font-semibold">Qanday hisoblandi</h2>
-          <Breakdown c={calc} taxRate={me?.org.tax_rate} />
+          <Breakdown c={calc} taxRate={me?.org.tax_rate} handed={data.handed} />
         </div>
         <div className="space-y-6">
           <div className="card">
@@ -83,6 +93,22 @@ export default function MySalary() {
               </ul>
             )}
           </div>
+          {data.payouts.length > 0 && (
+            <div className="card">
+              <h2 className="mb-3 font-semibold">Qo'lga berilgan pullar</h2>
+              <ul className="divide-y divide-slate-100 text-sm">
+                {data.payouts.map((c) => (
+                  <li key={c.id} className="flex justify-between py-2">
+                    <span>
+                      {c.given_on}
+                      {c.note && <span className="text-slate-500"> — {c.note}</span>}
+                    </span>
+                    <span className="tabular-nums text-rose-700">{money(c.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="card p-0">
             <h2 className="px-4 pt-4 font-semibold">Oyliklar tarixi</h2>
             {data.history.length === 0 ? (

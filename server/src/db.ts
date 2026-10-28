@@ -87,6 +87,18 @@ CREATE TABLE IF NOT EXISTS adjustments (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Oylik hisobidan tashqari, qo'lga (naqd) berilgan pullar. Qoldiq = qo'lga beriladi − shu summalar.
+CREATE TABLE IF NOT EXISTS cash_payouts (
+  id INTEGER PRIMARY KEY,
+  employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+  period TEXT NOT NULL,
+  amount REAL NOT NULL,
+  given_on TEXT NOT NULL DEFAULT (date('now')),
+  note TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS cash_payouts_employee_period ON cash_payouts (employee_id, period);
+
 CREATE TABLE IF NOT EXISTS payrolls (
   id INTEGER PRIMARY KEY,
   org_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
