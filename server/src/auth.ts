@@ -29,7 +29,7 @@ export const verifyToken = (token: string) => {
   return { id, orgId, role, employeeId };
 };
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = req.headers.authorization?.replace(/^Bearer /, '');
   if (!token) return res.status(401).json({ error: 'Avtorizatsiya talab qilinadi' });
   let claims: AuthUser;
@@ -39,7 +39,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ error: 'Token yaroqsiz yoki muddati o\'tgan' });
   }
   // Baza qayta yaratilgan bo'lsa (masalan, bepul serverda qayta ishga tushganda) token egasi yo'q bo'lishi mumkin
-  const u = get('SELECT id, org_id, role, employee_id FROM users WHERE id = ?', claims.id);
+  const u = await get('SELECT id, org_id, role, employee_id FROM users WHERE id = ?', claims.id);
   if (!u || u.org_id !== claims.orgId) return res.status(401).json({ error: 'Foydalanuvchi topilmadi, qayta kiring' });
   req.user = { id: u.id, orgId: u.org_id, role: u.role, employeeId: u.employee_id };
   next();

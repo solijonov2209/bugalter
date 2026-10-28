@@ -6,6 +6,7 @@ import cors from 'cors';
 import { ZodError } from 'zod';
 import { api, HttpError } from './routes.js';
 import { initRealtime } from './realtime.js';
+import { ready } from './db.js';
 
 const app = express();
 app.use(cors());
@@ -31,4 +32,5 @@ const server = http.createServer(app);
 initRealtime(server);
 
 const PORT = Number(process.env.PORT ?? 4000);
+await ready;
 server.listen(PORT, () => console.log(`API: http://localhost:${PORT}`));
