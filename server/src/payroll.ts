@@ -107,6 +107,11 @@ export function previewForEmployee(emp: Row, taxRate: number, period: string) {
   };
 }
 
+/** Shu oy uchun xodimga qo'lga berilgan pullar yig'indisi */
+export const handedTotal = (employeeId: number, period: string) =>
+  get<{ total: number }>('SELECT COALESCE(SUM(amount), 0) AS total FROM cash_payouts WHERE employee_id = ? AND period = ?', employeeId, period)!
+    .total;
+
 /** Oylik jadvali: saqlangan qatorlar bo'lsa ularni, bo'lmasa jonli hisobni ko'rsatadi. */
 export function payrollSheet(orgId: number, period: string) {
   const org = get('SELECT * FROM organizations WHERE id = ?', orgId)!;
@@ -118,6 +123,7 @@ export function payrollSheet(orgId: number, period: string) {
       employee: { id: emp.id, full_name: emp.full_name, position: emp.position, pay_type: emp.pay_type },
       live,
       saved: saved ? ({ ...saved, details: JSON.parse(saved.details) } as Row) : null,
+      handed: handedTotal(emp.id, period),
     };
   });
 }

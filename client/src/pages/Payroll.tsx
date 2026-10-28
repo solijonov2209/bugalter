@@ -8,6 +8,7 @@ interface Row {
   employee: { id: number; full_name: string; position: string; pay_type: string };
   live: Calc;
   saved: (Calc & { status: string; paid_at: string | null }) | null;
+  handed: number;
 }
 
 export default function Payroll() {
@@ -41,6 +42,7 @@ export default function Payroll() {
     act(() => api('/payroll/status', { method: 'POST', body: { period, status, employee_ids: targets } }));
 
   const total = rows.reduce((s, r) => s + (r.saved ?? r.live).net, 0);
+  const handedTotal = rows.reduce((s, r) => s + r.handed, 0);
   const outdated = (r: Row) => r.saved?.status === 'draft' && r.saved.net !== r.live.net;
 
   return (
@@ -83,6 +85,8 @@ export default function Payroll() {
                 <th className="text-right">Soliq</th>
                 <th className="text-right">Avans/ushl.</th>
                 <th className="text-right">Qo'lga</th>
+                <th className="text-right">Qo'lga berilgan</th>
+                <th className="text-right">Qoldiq</th>
                 <th>Holat</th>
               </tr>
             </thead>
@@ -109,6 +113,8 @@ export default function Payroll() {
                     <td className="text-right tabular-nums text-rose-700">{money(v.tax)}</td>
                     <td className="text-right tabular-nums text-rose-700">{money(v.advance + v.deductions)}</td>
                     <td className="text-right font-semibold tabular-nums">{money(v.net)}</td>
+                    <td className="text-right tabular-nums text-rose-700">{r.handed ? money(r.handed) : '—'}</td>
+                    <td className={`text-right tabular-nums ${v.net - r.handed < 0 ? 'text-rose-700' : ''}`}>{money(v.net - r.handed)}</td>
                     <td>
                       <StatusBadge status={r.saved?.status} />
                       {outdated(r) && <div className="mt-1 text-xs text-amber-700">O'zgargan, qayta hisoblang</div>}
@@ -123,6 +129,8 @@ export default function Payroll() {
                   Jami qo'lga:
                 </td>
                 <td className="px-3 py-3 text-right tabular-nums">{money(total)}</td>
+                <td className="px-3 py-3 text-right tabular-nums text-rose-700">{money(handedTotal)}</td>
+                <td className="px-3 py-3 text-right tabular-nums">{money(total - handedTotal)}</td>
                 <td />
               </tr>
             </tfoot>
@@ -135,7 +143,11 @@ export default function Payroll() {
           {detail.saved && detail.saved.status !== 'draft' && (
             <p className="mb-3 text-sm text-slate-500">Bu oylik qulflangan, quyida saqlangan hisob ko'rsatilgan.</p>
           )}
-          <Breakdown c={detail.saved && detail.saved.status !== 'draft' ? detail.saved : detail.live} taxRate={me?.org.tax_rate} />
+          <Breakdown
+            c={detail.saved && detail.saved.status !== 'draft' ? detail.saved : detail.live}
+            taxRate={me?.org.tax_rate}
+            handed={detail.handed}
+          />
         </Modal>
       )}
     </div>

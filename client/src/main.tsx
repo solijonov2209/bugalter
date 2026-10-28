@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Employees from './pages/Employees';
 import Attendance from './pages/Attendance';
 import Adjustments from './pages/Adjustments';
+import CashPayouts from './pages/CashPayouts';
 import Payroll from './pages/Payroll';
 import Groups from './pages/Groups';
 import Students from './pages/Students';
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route path="/employees" element={<Employees />} />
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/adjustments" element={<Adjustments />} />
+        <Route path="/cash-payouts" element={<CashPayouts />} />
         <Route path="/payroll" element={<Payroll />} />
         {center && <Route path="/groups" element={<Groups />} />}
         {center && <Route path="/students" element={<Students />} />}

@@ -18,6 +18,7 @@ export default function Layout() {
         { to: '/employees', label: center ? "Xodimlar va o'qituvchilar" : 'Xodimlar' },
         { to: '/attendance', label: 'Tabel' },
         { to: '/adjustments', label: 'Bonus / avans / ushlanma' },
+        { to: '/cash-payouts', label: "Qo'lga berilgan pullar" },
         ...(center
           ? [
               { to: '/groups', label: 'Guruhlar' },

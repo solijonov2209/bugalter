@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { all, get, run, tx } from './db.js';
 import { requireAuth, requireRole, signToken, staffOnly, type AuthUser } from './auth.js';
-import { currentPeriod, payrollSheet, previewForEmployee, savePayroll } from './payroll.js';
+import { currentPeriod, handedTotal, payrollSheet, previewForEmployee, savePayroll } from './payroll.js';
 import { notifyPayroll } from './realtime.js';
 
 export const api = Router();
@@ -11,6 +11,7 @@ export const api = Router();
 const period = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Davr YYYY-MM formatida bo\'lishi kerak');
 const id = z.coerce.number().int().positive();
 const money = z.coerce.number().min(0);
+const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Sana YYYY-MM-DD formatida bo\'lishi kerak');
 
 const periodOf = (req: Request) => period.parse(req.query.period ?? currentPeriod());
 
@@ -85,6 +86,8 @@ api.get('/me/salary', requireRole('employee'), (req, res) => {
     live: previewForEmployee(emp, org.tax_rate, p),
     saved: saved ? { ...saved, details: JSON.parse(saved.details) } : null,
     adjustments: all('SELECT * FROM adjustments WHERE employee_id = ? AND period = ? ORDER BY created_at DESC', emp.id, p),
+    handed: handedTotal(emp.id, p),
+    payouts: all('SELECT * FROM cash_payouts WHERE employee_id = ? AND period = ? ORDER BY given_on DESC, id DESC', emp.id, p),
     history: all(
       'SELECT period, gross, tax, net, status, paid_at FROM payrolls WHERE employee_id = ? ORDER BY period DESC LIMIT 12',
       emp.id,
@@ -117,10 +120,12 @@ api.get('/dashboard', (req, res) => {
       t.gross += v.gross;
       t.tax += v.tax;
       t.net += v.net;
+      // To'langan oylikda qo'lga berilgan pul allaqachon "to'langan" ichida
       if (r.saved?.status === 'paid') t.paid += v.net;
+      else t.handed += r.handed;
       return t;
     },
-    { gross: 0, tax: 0, net: 0, paid: 0 },
+    { gross: 0, tax: 0, net: 0, paid: 0, handed: 0 },
   );
   const center = get(
     `SELECT (SELECT COUNT(*) FROM students WHERE org_id = ? AND active = 1) AS students,
@@ -270,6 +275,43 @@ api.delete('/adjustments/:id', (req, res) => {
   if (!a) throw new HttpError(404, 'Topilmadi');
   run('DELETE FROM adjustments WHERE id = ?', a.id);
   notifyPayroll(req.user.orgId, [a.employee_id], a.period);
+  res.status(204).end();
+});
+
+// ---------- Qo'lga berilgan pullar ----------
+
+api.get('/cash-payouts', (req, res) => {
+  const p = periodOf(req);
+  res.json(
+    all(
+      `SELECT c.*, e.full_name FROM cash_payouts c JOIN employees e ON e.id = c.employee_id
+       WHERE e.org_id = ? AND c.period = ? ORDER BY c.given_on DESC, c.id DESC`,
+      req.user.orgId, p,
+    ),
+  );
+});
+
+api.post('/cash-payouts', (req, res) => {
+  const b = z
+    .object({ employee_id: id, period, amount: money.positive(), given_on: date, note: z.string().default('') })
+    .parse(req.body);
+  owned('employees', b.employee_id, req.user.orgId);
+  const r = run(
+    'INSERT INTO cash_payouts (employee_id, period, amount, given_on, note) VALUES (?, ?, ?, ?, ?)',
+    b.employee_id, b.period, b.amount, b.given_on, b.note,
+  );
+  notifyPayroll(req.user.orgId, [b.employee_id], b.period);
+  res.status(201).json(get('SELECT * FROM cash_payouts WHERE id = ?', r.lastInsertRowid));
+});
+
+api.delete('/cash-payouts/:id', (req, res) => {
+  const c = get(
+    'SELECT c.* FROM cash_payouts c JOIN employees e ON e.id = c.employee_id WHERE c.id = ? AND e.org_id = ?',
+    id.parse(req.params.id), req.user.orgId,
+  );
+  if (!c) throw new HttpError(404, 'Topilmadi');
+  run('DELETE FROM cash_payouts WHERE id = ?', c.id);
+  notifyPayroll(req.user.orgId, [c.employee_id], c.period);
   res.status(204).end();
 });
 

@@ -26,6 +26,7 @@ export const money = (n: number | null | undefined) =>
   new Intl.NumberFormat('uz-UZ', { maximumFractionDigits: 0 }).format(n ?? 0) + " so'm";
 
 export const currentPeriod = () => new Date().toISOString().slice(0, 7);
+export const today = () => new Date().toISOString().slice(0, 10);
 
 export const PAY_TYPES: Record<string, string> = {
   fixed: 'Oklad (oylik maosh)',
