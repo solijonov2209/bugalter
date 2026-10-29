@@ -23,7 +23,7 @@ Korxona va o'quv markazlari uchun oylik maoshni hisoblash va boshqarish web ilov
 | Qism | Texnologiya |
 |---|---|
 | Backend | Node.js 22, Express 5, TypeScript (tsx), Zod |
-| Ma'lumotlar bazasi | SQLite (Node'ning o'rnatilgan `node:sqlite` moduli, native paket shart emas) |
+| Ma'lumotlar bazasi | PostgreSQL (`DATABASE_URL`); lokalda o'rnatish shart emas, o'rniga fayldagi PGlite ishlaydi |
 | Real vaqt | Socket.io |
 | Auth | JWT + bcrypt |
 | Frontend | React 19, Vite, Tailwind CSS 4, React Router |
@@ -57,17 +57,32 @@ npm run build
 JWT_SECRET=uzun-maxfiy-kalit PORT=4000 npm start
 ```
 
-Server `client/dist` ni o'zi beradi. Ma'lumotlar bazasi fayli: `server/data/bugalter.db` (`DB_FILE` bilan o'zgartiriladi).
+Server `client/dist` ni o'zi beradi.
 
-### Bepul serverga joylash (Render.com)
+Muhit o'zgaruvchilari:
 
-1. [render.com](https://render.com) da GitHub orqali ro'yxatdan o'ting.
-2. **New → Blueprint** ni bosing va shu repozitoriyani tanlang. `render.yaml` hamma sozlamani o'zi o'qiydi.
-3. **Apply** ni bosing. 3–5 daqiqadan keyin `https://bugalter-xxxx.onrender.com` manzili ochiladi.
+| Nomi | Vazifasi |
+|---|---|
+| `DATABASE_URL` | PostgreSQL ulanish manzili. Berilmasa, `server/data/pglite` papkasidagi lokal baza ishlatiladi (`PGLITE_DIR` bilan o'zgartiriladi) |
+| `JWT_SECRET` | Token imzosi uchun maxfiy kalit (production'da majburiy) |
+| `ADMIN_RESET_KEY` | Parolni tiklash kaliti. Kirish sahifasidagi "Parolni unutdingizmi?" faqat shu o'rnatilganda ishlaydi |
 
-Bepul tarif cheklovlari:
-- 15 daqiqa ishlatilmasa server uxlaydi, birinchi ochilishi ~1 daqiqa kutadi.
-- Disk saqlanmaydi: server qayta ishga tushganda kiritilgan ma'lumotlar o'chadi va demo ma'lumotlar qaytadan yaratiladi. Haqiqiy ishlatish uchun PostgreSQL (masalan Neon yoki Render Postgres) ga o'tish kerak.
+### Bepul serverga joylash (Render.com + Neon)
+
+**1. Baza (Neon, bepul PostgreSQL):**
+1. [neon.tech](https://neon.tech) da GitHub orqali ro'yxatdan o'ting va yangi loyiha yarating (region: Frankfurt).
+2. **Connect** tugmasini bosib, `postgresql://...neon.tech/neondb?sslmode=require` ko'rinishidagi ulanish manzilini nusxalang.
+
+**2. Server (Render):**
+1. [render.com](https://render.com) da **New → Blueprint** ni bosing va shu repozitoriyani tanlang.
+2. `DATABASE_URL` so'ralganda Neon manzilini qo'ying va **Apply** ni bosing.
+3. Mavjud service bo'lsa: service → **Environment** → `DATABASE_URL` qo'shing va saqlang.
+
+`ADMIN_RESET_KEY` avtomatik yaratiladi, uni service → **Environment** bo'limida ko'rish mumkin.
+
+Demo ma'lumotlar production'da avtomatik yaratilmaydi. Kerak bo'lsa, lokal kompyuterdan `DATABASE_URL=... npm run seed` bilan qo'shing (demo parollar `123456`, shuning uchun haqiqiy ishlatishda qo'shmang).
+
+Bepul tarifda server 15 daqiqa ishlatilmasa uxlaydi va birinchi ochilishi ~1 daqiqa kutadi. Ma'lumotlar Neon'da saqlangani uchun o'chmaydi.
 
 ### Testlar
 
@@ -79,7 +94,7 @@ npm test
 
 ```
 server/src/
-  db.ts         sxema va SQLite yordamchilari
+  db.ts         sxema va PostgreSQL / PGlite yordamchilari
   payroll.ts    oylik hisoblash (sof funksiya + vedomost)
   routes.ts     REST API
   realtime.ts   Socket.io xonalari (tashkilot / xodim)

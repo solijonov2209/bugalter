@@ -6,14 +6,16 @@
     "dev": "tsx watch src/index.ts",
     "start": "NODE_ENV=production tsx src/index.ts",
     "seed": "tsx src/seed.ts",
-    "test": "node --import tsx --test src/**/*.test.ts",
+    "test": "PGLITE_DIR=memory:// node --import tsx --test src/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.12",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "express": "^5.3.0",
     "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1",
     "socket.io": "^4.8.4",
     "zod": "^4.6.7"
   },
@@ -22,6 +24,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }

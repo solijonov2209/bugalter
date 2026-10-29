@@ -5,11 +5,16 @@ services:
     runtime: node
     plan: free
     buildCommand: npm install && npm run build
-    # Bepul tarifda disk saqlanmaydi: har qayta ishga tushganda demo ma'lumotlar qaytadan yaratiladi
-    startCommand: npm run seed && npm start
+    startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      # Neon (yoki boshqa PostgreSQL) ulanish manzili, Render'da qo'lda kiritiladi
+      - key: DATABASE_URL
+        sync: false
       - key: JWT_SECRET
+        generateValue: true
+      # "Parolni unutdingizmi?" uchun kalit; Environment bo'limida ko'rinadi
+      - key: ADMIN_RESET_KEY
         generateValue: true
       - key: NODE_VERSION
         value: "22"
